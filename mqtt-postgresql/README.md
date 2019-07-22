@@ -41,7 +41,6 @@ You should get this:
 
 Under the home route, you would get OK, because in the code, we send a code 200.
 
-
 And under the "/temps" route, you would see the data queried from the database. 
 
 If you don't have any data yet, you would just see an empty array.
