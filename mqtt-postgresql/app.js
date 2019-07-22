@@ -1,8 +1,3 @@
-/*
-Branch :: master
--- master branch is synchronized with the GitHub repo.
-*/
-
 const express = require('express');
 const mqtt = require('mqtt');
 const moment = require('moment');
