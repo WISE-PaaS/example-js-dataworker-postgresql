@@ -62,8 +62,6 @@ const database = vcap_services['postgresql-innoworks'][0].credentials.database;
 **NOTE**: **'postgresql-innoworks'** is the service name, not service instance name.
 To check service name, please login to WISE-PaaS Management Portal or command line: `cf services`
 
-
-
 #### Part 2. Get variables of Rabbitmq
 
 ```js
@@ -72,5 +70,79 @@ const vcapServices = JSON.parse(process.env.VCAP_SERVICES);
 const mqttUri = vcapServices['p-rabbitmq'][0].credentials.protocols.mqtt.uri
 ```
 
-**Note**: Just the same as above **'p-rabbitmq'** is the service name, not service instance name.
+**Note**: Just the same as above, **'p-rabbitmq'** is the service name, not service instance name.
 To check service name, please login to WISE-PaaS Management Portal or command line: `cf services`
+
+#### Part 3. Create Schema for the data
+
+```js
+const pool = new Pool({
+  host: host,
+  user: user,
+  password: password,
+  port: dbPort,
+  database: database,
+  max: 3,
+  idleTimeoutMillis: 5000,
+  connectionTimeoutMillis: 2000
+});
+
+// SQL commands for creating table for storing data
+const queryString = `
+CREATE SCHEMA IF NOT EXISTS "livingroom";
+ALTER SCHEMA "livingroom" OWNER TO "groupFamily";
+CREATE TABLE IF NOT EXISTS "livingroom"."temperature"(
+  id serial,
+  timestamp timestamp (2) default current_timestamp,
+  temperature integer,
+  PRIMARY KEY (id)
+);
+ALTER TABLE "livingroom"."temperature" OWNER to "groupFamily";
+GRANT ALL ON ALL TABLES IN SCHEMA "livingroom" TO "groupFamily";
+GRANT ALL ON ALL SEQUENCES IN SCHEMA "livingroom" TO "groupFamily";
+`;
+
+// Execute the SQL commands for startup
+pool.query(queryString)
+  .then(result => {
+    console.log('@' + formatTime() + ' -- Schema and table initialized.');
+  })
+  .catch(err => console.error('Error adding table...', err.stack));
+```
+
+**Note**: This part creates the data table and grants the table to a group.
+
+#### Part 4. Subscribe to a topic and listen
+
+```js
+const client = mqtt.connect(mqttUri);
+
+// Subscribe
+client.on('connect', (connack) => {
+  client.subscribe('livingroom/temperature', (err, granted) => {
+    if (err) console.log(err);
+
+    console.log('@' + formatTime() + ' -- Subscribed to the topic: livingroom/temperature');
+  });
+});
+
+// Receiving data
+client.on('message', (topic, message, packet) => {
+  let time = formatTime();
+  console.log(`@${time} -- Got data from: ${topic}`);
+
+  // mock temperature data
+  const temp = message.toString();
+
+  const queryString = 'INSERT INTO livingroom.temperature(temperature) VALUES($1) RETURNING *';
+  const values = [temp];
+
+  pool.query(queryString, values)
+    .then(result => {
+      console.log('Data added: ', result['rows'][0]);
+    })
+    .catch(err => console.error('Error adding data...', err.stack));
+});
+```
+
+**NOTE**: This part subscribes the app to the topic we assigned and receives data from it, then passes it to the database.
