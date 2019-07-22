@@ -70,7 +70,7 @@ const vcapServices = JSON.parse(process.env.VCAP_SERVICES);
 const mqttUri = vcapServices['p-rabbitmq'][0].credentials.protocols.mqtt.uri
 ```
 
-**Note**: Just the same as above, **'p-rabbitmq'** is the service name, not service instance name.
+**NOTE**: Just the same as above, **'p-rabbitmq'** is the service name, not service instance name.
 To check service name, please login to WISE-PaaS Management Portal or command line: `cf services`
 
 #### Part 3. Create Schema for the data
@@ -110,7 +110,7 @@ pool.query(queryString)
   .catch(err => console.error('Error adding table...', err.stack));
 ```
 
-**Note**: This part creates the data table and grants the table to a group.
+**NOTE**: This part creates the data table and grants the table to a group.
 
 #### Part 4. Subscribe to a topic and listen
 
