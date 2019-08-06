@@ -15,4 +15,4 @@ Open a terminal in the folder.
     
 ## Results
 
-![Imgur](https://i.imgur.com/OzK3GD1.png)
+![Imgur](https://i.imgur.com/OOLcGcd.png)
