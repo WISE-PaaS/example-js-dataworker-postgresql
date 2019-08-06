@@ -37,7 +37,7 @@ Paste your route on a browser to check your results.
 
 You should get this:
 
-![Imgur](https://i.imgur.com/SM6Rr9v.png)
+![Imgur](https://i.imgur.com/1xyCiV3.png)
 
 Under the home route, you would get OK, because in the code, we send a code 200.
 
